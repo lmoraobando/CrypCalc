@@ -36,7 +36,7 @@ const Tabs = () => {
                     </View>
                 ),
             }} />
-            <Tab.Screen name="Crytos value" component={CryptoVal} options={{
+            <Tab.Screen name="Cryto value" component={CryptoVal} options={{
                 tabBarIcon: () => (
                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                         <Image
