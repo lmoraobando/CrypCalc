@@ -1,85 +1,114 @@
-import React, { useEffect, useState } from "react"
-import { StyleSheet, Text, View } from "react-native"
-import { Card, Input } from "react-native-elements"
-import isNumber from "../utils/isNumber";
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, Text, View } from 'react-native'
+import { Card, Input } from 'react-native-elements'
+import isNumber from '../utils/isNumber'
 
 
 const Home = () => {
-    const [investmentAmount, setInvestmentAmount] = useState('');
-    const [initialCoinPrice, setInitialCoinPrice] = useState('');
-    const [totalAmount, setTotalAmount] = useState(0);
-    const [initialFeePercentage, setInitialFeePercentage] = useState('');
+    const [investmentAmount, setInvestmentAmount] = useState('')
+    const [initialCoinPrice, setInitialCoinPrice] = useState('')
+    const [lastCoinValue, setLastCoinValue] = useState('')
+    const [totalAmount, setTotalAmount] = useState('')
+    const [initialFeePercentage, setInitialFeePercentage] = useState('')
 
 
     useEffect(() => {
+       const numInvestment = parseFloat(investmentAmount === '' ? '0' : investmentAmount)
 
-        // let totalAmount = 0
-        //let investment = pInvestment ?? 0;
-        //initialFeePercentage = initialFeePercentage ?? 0;
-        //var initialCoinValue = $('#coin_first').val() ?? 0;
-        //var lastCoinValue = $('#coin_last').val() ?? 0;
-        //totalAmount = investment
+        const totalInvestmentFee = numInvestment * parseFloat(initialFeePercentage === '' ? '0' : initialFeePercentage) / 100
+        const investmentAfterFees = (numInvestment - totalInvestmentFee)
+        const totalCoinValue = investmentAfterFees / parseFloat(initialCoinPrice === '' ? '1' : initialCoinPrice) 
+        let totalReturn = totalCoinValue * parseFloat(lastCoinValue === '' ? '1' : lastCoinValue) 
 
-        var totalInvestmentFee = parseFloat(investmentAmount === '' ? '0' : investmentAmount) * parseFloat(initialFeePercentage === '' ? '0' : initialFeePercentage) / 100;
+        
+        const totalExitFee = totalReturn * 0 / 100
 
-        setTotalAmount(totalInvestmentFee);
-    }, [investmentAmount])
+        totalReturn = totalReturn - totalExitFee
+        
+        totalReturn = roundFloat(totalReturn)
+
+        const profitLoss = roundFloat((totalReturn - numInvestment))
+        const profitLossPercentage = roundFloat(((profitLoss/numInvestment)*100))
+
+        const sign = profitLoss > 0 ? '+' : '-'
+        let resultString = `${sign} $ ${abs(profitLoss)}   (${sign + abs(profitLossPercentage)} %)`
+
+
+        setTotalAmount(resultString)
+    }, [investmentAmount, initialFeePercentage,lastCoinValue])
+
+    const roundFloat= (float:number, digits?:number) =>{
+        if (!digits) {
+            digits = 2
+        }
+        const round = Math.pow(10, digits)
+        return Math.round((float + Number.EPSILON) * round) / round
+    }
+
+    function abs(value:number) {
+        return Math.abs(value)
+    }
 
     const calcProfit = (pInvestment: number) => {
         let totalAmount = 0
-        let investment = pInvestment ?? 0;
-        //initialFeePercentage = initialFeePercentage ?? 0;
-        //var initialCoinValue = $('#coin_first').val() ?? 0;
-        //var lastCoinValue = $('#coin_last').val() ?? 0;
+        let investment = pInvestment ?? 0
         totalAmount = investment
-
-        // var totalInvestmentFee = investment * initialFeePercentage / 100;
 
         return totalAmount
     }
 
     const handleInvestFeeChange = (value: string) => {
-        let text = value.replace(".", '');
-        let total = 0
-        let investmentValue = 0
+        let text = value.replace('.', '')
         if (isNumber(text)) {
-            // const numericVal = parseFloat(value)
-            //investmentValue = numericVal
-            setInitialFeePercentage(value);
+            setInitialFeePercentage(value)
         }
         else {
-            setInitialFeePercentage('0');
+            setInitialFeePercentage('0')
         }
-
-        total = calcProfit(investmentValue)
     }
 
     const handleInvestmentChange = (value: string) => {
-        let text = value.replace(".", '');
+        let text = value.replace('.', '')
         let total = 0
         let investmentValue = 0
         if (isNumber(text)) {
             const numericVal = Number(value)
             investmentValue = numericVal
-            setInvestmentAmount(numericVal);
+            setInvestmentAmount(numericVal.toString())
         }
         else {
-            setInvestmentAmount(0);
+            setInvestmentAmount('0')
         }
 
     }
 
     const handleInitialPriceChange = (value: string) => {
-        let text = value.replace(".", '');
+        let text = value.replace('.', '')
         let total = 0
         let investmentValue = 0
         if (isNumber(text)) {
             const numericVal = Number(value)
             investmentValue = numericVal
-            setInvestmentAmount(numericVal);
+            setInitialCoinPrice(numericVal.toString())
         }
         else {
-            setInvestmentAmount(0);
+            setInitialCoinPrice('0')
+        }
+
+
+    }
+
+    const handleSetLastCoinValue = (value: string) => {
+        let text = value.replace('.', '')
+        let total = 0
+        let investmentValue = 0
+        if (isNumber(text)) {
+            const numericVal = Number(value)
+            investmentValue = numericVal
+            setLastCoinValue(numericVal.toString())
+        }
+        else {
+            setLastCoinValue('0')
         }
 
 
@@ -109,6 +138,7 @@ const Home = () => {
                 <Input
                     placeholder='Selling Coin Price'
                     leftIcon={{ type: 'font-awesome', name: 'bitcoin' }}
+                    onChangeText={newText => handleSetLastCoinValue(newText)}
                     keyboardType="numeric"
                 />
                 <Input
@@ -147,7 +177,7 @@ const styles = StyleSheet.create({
         width: 300,
         borderRadius: 10,
         justifyContent: 'center',
-        shadowColor: "#7F5DF0",
+        shadowColor: '#7F5DF0',
         shadowOpacity: 1.25,
         shadowRadius: 5,
         elevation: 5,
@@ -163,7 +193,7 @@ const styles = StyleSheet.create({
         width: 300,
         borderRadius: 10,
         justifyContent: 'center',
-        shadowColor: "#7F5DF0",
+        shadowColor: '#7F5DF0',
         shadowOpacity: 1.25,
         shadowRadius: 5,
         elevation: 5,
@@ -172,4 +202,4 @@ const styles = StyleSheet.create({
             height: 10
         },
     },
-});
+})
