@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import  { useEffect, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Card, Input } from 'react-native-elements'
 import isNumber from '../utils/isNumber'
-
+import CheckBox from 'react-native-check-box'
+import SelectDropdown from 'react-native-select-dropdown'
+import FontAwesome from 'react-native-vector-icons/FontAwesome'
 
 const Home = () => {
     const [investmentAmount, setInvestmentAmount] = useState('')
@@ -10,7 +12,8 @@ const Home = () => {
     const [lastCoinValue, setLastCoinValue] = useState('')
     const [totalAmount, setTotalAmount] = useState('')
     const [initialFeePercentage, setInitialFeePercentage] = useState('')
-
+    const [toggleCheckBox, setToggleCheckBox] = useState(false)
+    const countries = ['Egypt', 'Canada', 'Australia', 'Ireland']
 
     useEffect(() => {
        const numInvestment = parseFloat(investmentAmount === '' ? '0' : investmentAmount)
@@ -28,10 +31,10 @@ const Home = () => {
         totalReturn = roundFloat(totalReturn)
 
         const profitLoss = roundFloat((totalReturn - numInvestment))
-        const profitLossPercentage = roundFloat(((profitLoss/numInvestment)*100))
+        const profitLossPercentage = profitLoss ===0 && numInvestment === 0 ? 0 : roundFloat(((profitLoss/numInvestment)*100))
 
         const sign = profitLoss > 0 ? '+' : '-'
-        let resultString = `${sign} $ ${abs(profitLoss)}   (${sign + abs(profitLossPercentage)} %)`
+        let resultString = `${sign} $ ${abs(profitLoss)}   (${sign + abs(profitLossPercentage ?? 0)} %)`
 
 
         setTotalAmount(resultString)
@@ -49,13 +52,6 @@ const Home = () => {
         return Math.abs(value)
     }
 
-    const calcProfit = (pInvestment: number) => {
-        let totalAmount = 0
-        let investment = pInvestment ?? 0
-        totalAmount = investment
-
-        return totalAmount
-    }
 
     const handleInvestFeeChange = (value: string) => {
         let text = value.replace('.', '')
@@ -69,7 +65,6 @@ const Home = () => {
 
     const handleInvestmentChange = (value: string) => {
         let text = value.replace('.', '')
-        let total = 0
         let investmentValue = 0
         if (isNumber(text)) {
             const numericVal = Number(value)
@@ -84,7 +79,6 @@ const Home = () => {
 
     const handleInitialPriceChange = (value: string) => {
         let text = value.replace('.', '')
-        let total = 0
         let investmentValue = 0
         if (isNumber(text)) {
             const numericVal = Number(value)
@@ -118,7 +112,39 @@ const Home = () => {
 
     return (
         <View style={styles.container}>
+            <Card containerStyle={styles.cardTotal}>
+                <Text style={styles.titleText}>
+                    Profit:
+                </Text>
+                <Text style={styles.descriptionText}>
+                    {totalAmount.toString()}
+                </Text>
+            </Card>
             <Card containerStyle={styles.card}>
+            <SelectDropdown
+                    data={countries}
+                    // defaultValueByIndex={1}
+                    // defaultValue={'England'}
+                    onSelect={(selectedItem, index) => {
+                    console.log(selectedItem, index)
+                    }}
+                    defaultButtonText={'Select Coin'}
+                    buttonTextAfterSelection={(selectedItem, index) => {
+                    return selectedItem
+                    }}
+                    rowTextForSelection={(item, index) => {
+                    return item
+                    }}
+                    buttonStyle={styles.dropdown2BtnStyle}
+                    buttonTextStyle={styles.dropdown2BtnTxtStyle}
+                    renderDropdownIcon={isOpened => {
+                    return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#000'} size={18} />
+                    }}
+                    dropdownIconPosition={'right'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                    rowStyle={styles.dropdown2RowStyle}
+                    rowTextStyle={styles.dropdown2RowTxtStyle}
+                 />
                 <Input
                     placeholder='Investment'
                     leftIcon={{ type: 'font-awesome', name: 'dollar' }}
@@ -134,13 +160,31 @@ const Home = () => {
                     onChangeText={newText => handleInitialPriceChange(newText)}
                     value={initialCoinPrice.toString()}
                 />
+              <CheckBox
+                    style={{paddingRight: 50, marginLeft:10}}
+                    onClick={()=>{
+                        setToggleCheckBox(!toggleCheckBox)
+                    }}
+                    isChecked={toggleCheckBox}
+                    leftText={'Enter manually amount'}
+                />  
+                 <Input
+                    placeholder='Selling Coin Price'
+                    leftIcon={{ type: 'font-awesome', name: 'bitcoin' }}
+                    onChangeText={newText => handleSetLastCoinValue(newText)}
+                    keyboardType="numeric"
+                />
+
+                {/*
+                
+
 
                 <Input
                     placeholder='Selling Coin Price'
                     leftIcon={{ type: 'font-awesome', name: 'bitcoin' }}
                     onChangeText={newText => handleSetLastCoinValue(newText)}
                     keyboardType="numeric"
-                />
+                />*/}
                 <Input
                     placeholder='Investment fee'
                     leftIcon={{ type: 'font-awesome', name: 'percent' }}
@@ -150,11 +194,7 @@ const Home = () => {
                 />
             </Card>
 
-            <Card containerStyle={styles.cardTotal}>
-                <Text>
-                    {totalAmount.toString()}
-                </Text>
-            </Card>
+            
         </View>
     )
 
@@ -170,10 +210,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
 
     },
+    titleText: {
+        fontSize: 15,
+        fontWeight:'bold'
+    },
+    descriptionText: {
+        fontSize: 20,
+        fontWeight:'bold'
+    },
     card: {
         backgroundColor: '#e4b258',
         padding: 20,
-        height: 350,
+        height: 450,
         width: 300,
         borderRadius: 10,
         justifyContent: 'center',
@@ -202,4 +250,37 @@ const styles = StyleSheet.create({
             height: 10
         },
     },
+    shadow: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 6},
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 10,
+      },
+
+      dropdown2BtnStyle: {
+        width: '80%',
+        height: 50,
+        backgroundColor: '#e4b258',
+        borderRadius: 8,
+      },
+      dropdown2BtnTxtStyle: {
+        color: '#000',
+        textAlign: 'center',
+        fontWeight: 'bold',
+      },
+      dropdown2DropdownStyle: {
+        backgroundColor: '#444',
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
+      },
+      dropdown2RowStyle: {backgroundColor: '#444', borderBottomColor: '#C5C5C5'},
+      dropdown2RowTxtStyle: {
+        color: '#FFF',
+        textAlign: 'center',
+        fontWeight: 'bold',
+      },
+    
+      dropdownRowImage: {width: 45, height: 45, color:'#000', resizeMode: 'cover'},
+      
 })

@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from "react"
-import { ActivityIndicator, FlatList, StyleSheet, Text, View, TouchableOpacity, Image } from "react-native"
-import { Card } from "react-native-elements";
-import { getCurrencies } from "../utils/apiCall"
+import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, FlatList, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
+import { Card } from 'react-native-elements'
+import { getCurrencies } from '../utils/apiCall'
 
 
 const CryptoVal = () => {
-    const [isLoading, setLoading] = useState(true);
+    const [isLoading, setLoading] = useState(true)
     const [currencyData, setCurrencyData] = useState<any[]>([])
-    const [refreshing, setRefreshing] = useState(false);
+    const [refreshing, setRefreshing] = useState(false)
 
     const fetchData = async () => {
-        const data = await getCurrencies();
+        const data = await getCurrencies()
         setCurrencyData(data)
         setLoading(false)
     }
 
     useEffect(() => {
-        fetchData(); // <-- (2) invoke on mount
-        const dataInterval = setInterval(() => fetchData(), 5 * 1000);
+        fetchData() // <-- (2) invoke on mount
+        const dataInterval = setInterval(() => fetchData(), 5 * 1000)
 
-        return () => clearInterval(dataInterval);
+        return () => clearInterval(dataInterval)
     }, [])
 
     return (
@@ -29,9 +29,9 @@ const CryptoVal = () => {
                 <FlatList
                     refreshing={refreshing}
                     onRefresh={async () => {
-                        setRefreshing(true);
-                        await fetchData();
-                        setRefreshing(false);
+                        setRefreshing(true)
+                        await fetchData()
+                        setRefreshing(false)
                     }}
                     data={currencyData}
                     keyExtractor={({ id }, index) => id}
@@ -45,12 +45,12 @@ const CryptoVal = () => {
 
                                 />
                                 <View>
-                                    <Text style={[styles.name, { fontWeight: "bold" }]}>{item.name}</Text>
+                                    <Text style={[styles.name, { fontWeight: 'bold' }]}>{item.name}</Text>
                                     <Text style={styles.subtitle}>{item.symbol}</Text>
                                 </View>
                                 <View style={{ flex: 1, flexDirection: 'row-reverse' }}>
 
-                                    <Text style={{ textAlign: 'right', fontWeight: "bold" }}>{"$ " + parseFloat(item.quote.USD.price).toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</Text>
+                                    <Text style={{ textAlign: 'right', fontWeight: 'bold' }}>{'$ ' + parseFloat(item.current_price).toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</Text>
                                 </View>
 
                             </View>
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
         width: 300,
         borderRadius: 10,
         justifyContent: 'center',
-        shadowColor: "#7F5DF0",
+        shadowColor: '#7F5DF0',
         shadowOpacity: 1.25,
         shadowRadius: 5,
         elevation: 5,
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     },
     cryptoValue: {
         marginLeft: 100,
-        textAlign: "right"
+        textAlign: 'right'
 
     }
-});
+})
