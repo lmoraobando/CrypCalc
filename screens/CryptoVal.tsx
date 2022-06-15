@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
 import { Card } from 'react-native-elements'
-import { getCurrencies } from '../utils/apiCall'
-
+import { getCurrencieList } from '../utils/apiCall'
+import { AdMobRewarded } from 'expo-ads-admob'
+import { Platform } from 'react-native'
 
 const CryptoVal = () => {
     const [isLoading, setLoading] = useState(true)
@@ -10,18 +11,39 @@ const CryptoVal = () => {
     const [refreshing, setRefreshing] = useState(false)
 
     const fetchData = async () => {
-        const data = await getCurrencies()
+        const data = await getCurrencieList()
         setCurrencyData(data)
         setLoading(false)
     }
 
+    let adUnitId = Platform.select({
+        'android':'ca-app-pub-2262491382687400/1689791893'
+      })
+    
+    let loadAd = async () =>{
+        await AdMobRewarded.setAdUnitID(adUnitId)
+        await AdMobRewarded.requestAdAsync()
+    }
+
+    
+
+    const callAds = useCallback(()=>{
+        loadAd().then(()=>(
+            AdMobRewarded.showAdAsync()
+        ))
+    },[])
+
+    
+
     useEffect(() => {
+        if(loadAd)
+        callAds()
+
         fetchData() // <-- (2) invoke on mount
         const dataInterval = setInterval(() => fetchData(), 5 * 1000)
-
         return () => clearInterval(dataInterval)
     }, [])
-
+    
     return (
         <View style={styles.container}>
 

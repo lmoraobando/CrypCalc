@@ -1,10 +1,20 @@
-import  { useEffect, useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import  { useCallback, useEffect, useState } from 'react'
+import { StyleSheet, Text, View,Image, Platform } from 'react-native'
 import { Card, Input } from 'react-native-elements'
 import isNumber from '../utils/isNumber'
 import CheckBox from 'react-native-check-box'
 import SelectDropdown from 'react-native-select-dropdown'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
+import { getCurrencieList, getCurrencyPriceById } from '../utils/apiCall'
+import { AdMobBanner, AdMobRewarded } from 'expo-ads-admob'
+
+
+type Coin ={
+    id:string;
+    Name:string;
+    Value?:number
+}
+
 
 const Home = () => {
     const [investmentAmount, setInvestmentAmount] = useState('')
@@ -13,9 +23,33 @@ const Home = () => {
     const [totalAmount, setTotalAmount] = useState('')
     const [initialFeePercentage, setInitialFeePercentage] = useState('')
     const [toggleCheckBox, setToggleCheckBox] = useState(false)
-    const countries = ['Egypt', 'Canada', 'Australia', 'Ireland']
+    const [currencyDataList,setCurrencyDataList] = useState<Coin[]>([])
+    const [selectedCoin, setSelectedCoin] = useState<Coin>()
+    const [isSellingPriceCoin,setIsSellingPriceCoin] = useState<boolean>(false)
+
+    const getCoinVal = async ()=>{
+        const resp = await getCurrencieList()
+        console.log(currencyDataList)
+        setCurrencyDataList(resp.map((item)=>({name:item.name,id:item.id})))
+    }
+
+    const getCoinPrice = async ()=>{
+        const coinPrice = await getCurrencyPriceById(selectedCoin.id)
+        if(coinPrice)
+        setLastCoinValue(coinPrice[selectedCoin.id].usd.toString())
+    }
+
+    
+    
+    useEffect(()=>{
+        if(selectedCoin?.id){
+            getCoinPrice()
+        }
+
+    },[selectedCoin])
 
     useEffect(() => {
+        getCoinVal()
        const numInvestment = parseFloat(investmentAmount === '' ? '0' : investmentAmount)
 
         const totalInvestmentFee = numInvestment * parseFloat(initialFeePercentage === '' ? '0' : initialFeePercentage) / 100
@@ -38,7 +72,8 @@ const Home = () => {
 
 
         setTotalAmount(resultString)
-    }, [investmentAmount, initialFeePercentage,lastCoinValue])
+    }, [investmentAmount,initialCoinPrice, initialFeePercentage,lastCoinValue])
+
 
     const roundFloat= (float:number, digits?:number) =>{
         if (!digits) {
@@ -109,9 +144,21 @@ const Home = () => {
     }
 
 
+    const enableSellingPrice = ()=>{
+        setIsSellingPriceCoin(!isSellingPriceCoin)
+    }
+
 
     return (
         <View style={styles.container}>
+            <AdMobBanner
+            bannerSize="banner"
+            adUnitID="ca-app-pub-2262491382687400/5098553862" // Test ID, Replace with your-admob-unit-id
+            servePersonalizedAds={true} 
+            style={{
+                padding: 10,
+              }}
+            />
             <Card containerStyle={styles.cardTotal}>
                 <Text style={styles.titleText}>
                     Profit:
@@ -122,24 +169,40 @@ const Home = () => {
             </Card>
             <Card containerStyle={styles.card}>
             <SelectDropdown
-                    data={countries}
+                    data={currencyDataList}
                     // defaultValueByIndex={1}
                     // defaultValue={'England'}
                     onSelect={(selectedItem, index) => {
-                    console.log(selectedItem, index)
+                        setSelectedCoin(selectedItem)
                     }}
-                    defaultButtonText={'Select Coin'}
+                    //defaultButtonText={'Select Coin'}
                     buttonTextAfterSelection={(selectedItem, index) => {
                     return selectedItem
                     }}
                     rowTextForSelection={(item, index) => {
                     return item
                     }}
+                    renderCustomizedButtonChild={(selectedItem, index) => {
+                        return (
+                            <View style={styles.dropdown3BtnChildStyle}>
+                            <Text style={styles.dropdown3BtnTxt}>{selectedItem ? selectedItem.name : 'Select Coin'}</Text>
+                            <FontAwesome name="chevron-down" color={'#444'} size={18} />
+                          </View>
+                        )
+                      }}
                     buttonStyle={styles.dropdown2BtnStyle}
                     buttonTextStyle={styles.dropdown2BtnTxtStyle}
-                    renderDropdownIcon={isOpened => {
-                    return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#000'} size={18} />
-                    }}
+                    renderCustomizedRowChild={(item, index) => {
+                        return (
+                          <View style={styles.dropdown3RowChildStyle}>
+                            {/*<Image source={item.image} style={styles.dropdownRowImage} />*/}
+                            <Text style={styles.dropdown3RowTxt}>{item.name}</Text>
+                          </View>
+                        )
+                      }}
+                    //renderDropdownIcon={isOpened => {
+                    //return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#000'} size={18} />
+                    //}}
                     dropdownIconPosition={'right'}
                     dropdownStyle={styles.dropdown2DropdownStyle}
                     rowStyle={styles.dropdown2RowStyle}
@@ -163,28 +226,20 @@ const Home = () => {
               <CheckBox
                     style={{paddingRight: 50, marginLeft:10}}
                     onClick={()=>{
-                        setToggleCheckBox(!toggleCheckBox)
+                        enableSellingPrice()
                     }}
-                    isChecked={toggleCheckBox}
+                    isChecked={isSellingPriceCoin}
                     leftText={'Enter manually amount'}
                 />  
                  <Input
+                    style={{color:isSellingPriceCoin ? 'black':'gray'}}
                     placeholder='Selling Coin Price'
                     leftIcon={{ type: 'font-awesome', name: 'bitcoin' }}
                     onChangeText={newText => handleSetLastCoinValue(newText)}
+                    editable ={isSellingPriceCoin}
                     keyboardType="numeric"
+                    value={lastCoinValue}
                 />
-
-                {/*
-                
-
-
-                <Input
-                    placeholder='Selling Coin Price'
-                    leftIcon={{ type: 'font-awesome', name: 'bitcoin' }}
-                    onChangeText={newText => handleSetLastCoinValue(newText)}
-                    keyboardType="numeric"
-                />*/}
                 <Input
                     placeholder='Investment fee'
                     leftIcon={{ type: 'font-awesome', name: 'percent' }}
@@ -192,9 +247,11 @@ const Home = () => {
                     onChangeText={newText => handleInvestFeeChange(newText)}
                     value={initialFeePercentage.toString()}
                 />
+
+
             </Card>
 
-            
+           
         </View>
     )
 
@@ -282,5 +339,33 @@ const styles = StyleSheet.create({
       },
     
       dropdownRowImage: {width: 45, height: 45, color:'#000', resizeMode: 'cover'},
-      
+      dropdown3BtnChildStyle: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 18,
+      },
+      dropdown3BtnImage: {width: 45, height: 45, resizeMode: 'cover'},
+      dropdown3BtnTxt: {
+        color: '#444',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: 24,
+        marginHorizontal: 12,
+      },
+      dropdown3RowChildStyle: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingHorizontal: 18,
+      },
+      dropdown3RowTxt: {
+        color: '#F1F1F1',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: 24,
+        marginHorizontal: 12,
+      },
 })

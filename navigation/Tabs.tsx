@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { AdMobBanner } from 'expo-ads-admob'
 import { Image, StyleSheet, View } from 'react-native'
 import CryptoVal from '../screens/CryptoVal'
 import Home from '../screens/Home'
@@ -49,6 +50,7 @@ const Tabs = () => {
                     </View>
                 ),
             }} />
+
         </Tab.Navigator>
     )
 }
