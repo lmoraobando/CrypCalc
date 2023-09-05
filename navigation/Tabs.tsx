@@ -1,10 +1,11 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Image, StyleSheet, View } from 'react-native';
-import CryptoVal from '../screens/CryptoVal';
-import Home from '../screens/Home';
+import { AdMobBanner } from 'expo-ads-admob'
+import { Image, StyleSheet, View } from 'react-native'
+import CryptoVal from '../screens/CryptoVal'
+import Home from '../screens/Home'
 
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator()
 
 
 const Tabs = () => {
@@ -36,7 +37,7 @@ const Tabs = () => {
                     </View>
                 ),
             }} />
-            <Tab.Screen name="Crytos value" component={CryptoVal} options={{
+            <Tab.Screen name="Crypto Value" component={CryptoVal} options={{
                 tabBarIcon: () => (
                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                         <Image
@@ -49,16 +50,17 @@ const Tabs = () => {
                     </View>
                 ),
             }} />
+
         </Tab.Navigator>
     )
 }
 
-export default Tabs;
+export default Tabs
 
 
 const styles = StyleSheet.create({
     shodow: {
-        shadowColor: "#7F5DF0",
+        shadowColor: '#7F5DF0',
         shadowOffset: {
             width: 0,
             height: 10
